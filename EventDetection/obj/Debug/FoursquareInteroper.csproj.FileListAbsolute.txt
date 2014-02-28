@@ -1,0 +1,11 @@
+C:\Users\Samone1\Documents\Visual Studio 2012\Projects\EventDetection\EventDetection\EventDetection\bin\Debug\EventDetection.exe.config
+C:\Users\Samone1\Documents\Visual Studio 2012\Projects\EventDetection\EventDetection\EventDetection\obj\Debug\FoursquareInteroper.csprojResolveAssemblyReference.cache
+C:\Users\Samone1\Documents\Visual Studio 2012\Projects\EventDetection\EventDetection\EventDetection\bin\Debug\EventDetection.exe
+C:\Users\Samone1\Documents\Visual Studio 2012\Projects\EventDetection\EventDetection\EventDetection\bin\Debug\EventDetection.pdb
+C:\Users\Samone1\Documents\Visual Studio 2012\Projects\EventDetection\EventDetection\EventDetection\obj\Debug\EventDetection.exe
+C:\Users\Samone1\Documents\Visual Studio 2012\Projects\EventDetection\EventDetection\EventDetection\obj\Debug\EventDetection.pdb
+C:\Users\Samone1\Documents\Visual Studio 2012\Projects\EventDetection\EventDetection\EventDetection\bin\Debug\RestSharp.dll
+C:\Users\Samone1\Documents\Visual Studio 2012\Projects\EventDetection\EventDetection\EventDetection\bin\Debug\EntityFramework.dll
+C:\Users\Samone1\Documents\Visual Studio 2012\Projects\EventDetection\EventDetection\EventDetection\bin\Debug\EntityFramework.SqlServer.dll
+C:\Users\Samone1\Documents\Visual Studio 2012\Projects\EventDetection\EventDetection\EventDetection\bin\Debug\EntityFramework.xml
+C:\Users\Samone1\Documents\Visual Studio 2012\Projects\EventDetection\EventDetection\EventDetection\bin\Debug\EntityFramework.SqlServer.xml
