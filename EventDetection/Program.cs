@@ -21,9 +21,9 @@ namespace EventDetection
                          ConfigurationManager.OpenExeConfiguration(
                                ConfigurationUserLevel.None);
             if (configFile == null) throw new Exception("Have no configuration file. Goodbye!");
-            string clientId = configFile.AppSettings.Settings["clientId"].Value;//"ENP3KAMJTYXGH5GSETVPVOIBHSPFUGPHQB0IZ2BNJRDL0FCT";
-            string clientSecret = configFile.AppSettings.Settings["clientSecret"].Value;// "FQLMHNVBVHVNGI03AQJICDPO1IQZ5RNOSUIFRYG4QUFDIFA5";
-            string redirectUri = configFile.AppSettings.Settings["redirectUri"].Value; //"http://localhost/app";
+            string clientId = configFile.AppSettings.Settings["clientId"].Value;
+            string clientSecret = configFile.AppSettings.Settings["clientSecret"].Value;
+            string redirectUri = configFile.AppSettings.Settings["redirectUri"].Value;
             string code = configFile.AppSettings.Settings["code"].Value;
             string accessToken = configFile.AppSettings.Settings["accessToken"].Value;
 
@@ -39,63 +39,61 @@ namespace EventDetection
 
                 CodeForm form = CodeFormFactory.FormCreate(address, redirectUri);
                 Application.Run(form);
-
+ 
                 if (string.IsNullOrEmpty(form.Code)) throw new Exception("Returned code is equal to null. Goodbye");
                 code = form.Code;
                 string url = string.Format("{0}?client_id={1}&client_secret={2}&grant_type=authorization_code&redirect_uri={3}&code={4}", accessTokenUrl, clientId, clientSecret, redirectUri, code);
                 //  sharpSquare.GetAccessToken(redirectUri, code);
                 RestRequest r = new RestRequest(url);
-                //r.AddParameter("client_id",clientId);
-                //r.AddParameter("client_secret",clientSecret);
-                //  r.AddParameter("grant_type","authorization_code");
-                //  r.AddParameter("redirect_uri",redirectUri);
-                //           r.AddParameter("code",code);
-
-                IRestResponse wr = new RestClient().Execute(r);
+                AccessToken aToken = new RestClient().Execute<AccessToken>(r).Data;
 
                 configFile.AppSettings.Settings["code"].Value = code;
-                configFile.AppSettings.Settings["accessToken"].Value = accessToken;
+                configFile.AppSettings.Settings["accessToken"].Value = aToken.access_token;
                 configFile.Save(ConfigurationSaveMode.Modified);
                 ConfigurationManager.RefreshSection("appSettings");
             }
 
             #endregion
+
             Requests requests = new Requests(accessToken);
             List<Item2> venueList;
             int resultedOccassion = 0;
             int offset = 0;
 
- 
-            //foreach (Item2 g in venueList)
-            //{
-            //    Console.WriteLine(g.venue.id + ". " + g.venue.name);
-            //    Console.WriteLine(g.venue.location.address);
-
-            //    Console.WriteLine("Category:");
-            //    foreach (Category cat in g.venue.categories)
-            //        Console.WriteLine(cat.name);
-
-            //    Console.WriteLine("Tips:");
-            //    foreach (Tip tip in g.tips)
-            //    {
-            //        Console.WriteLine(tip.text);
-            //    }
 
 
-            //}
+       
+            VenueExploreType  venueReturns;
+
+            string leftBottomMap = configFile.AppSettings.Settings["leftBottomMapCorner"].Value;
+            string rightUpperMap =  configFile.AppSettings.Settings["rightUpperMapCorner"].Value;
+
+            RequestRegionCalculator reqCalculator = new RequestRegionCalculator(leftBottomMap, rightUpperMap, 0.125, 0.25);
+            ExploreInfo e ;
+            int i = 0;
+            do
+            {
+                 e = reqCalculator.CalculateNextParameters();
+                 i++;
+            }
+            while (e.Longitude != 0) ;
 
             System.Data.Entity.Database.SetInitializer(new EventDetection.Model.FoursquareDbInitializer());
-             VenueExploreType  t;
-            //  System.Data.Entity.Database.SetInitializer<EventDetection.Model.FoursquareContext>(initializer);
-            // System.Data.Entity.Database.SetInitializer(new EventDetection.Model.FoursquareDbInitializer());
             using (EventDetection.Model.FoursquareContext foursquareContext = new Model.FoursquareContext())
             {
                 do
                 {
-                
                     offset += 50;
-                      t = requests.VenueExplore(offset);
-                    venueList = t.response[0].groups[0].items;
+                    venueReturns = requests.VenueWholeCity(offset);
+                    venueList = venueReturns.response[0].groups[0].items;
+
+                    foreach (Item2 g in venueList)
+                    {
+                        Console.WriteLine(g.venue.id + ". " + g.venue.name);
+                    }
+          
+
+              //      ExploreInfo
                     resultedOccassion += foursquareContext.setNewVenueAndCheckinList(venueList, DateTime.Now);
                     foursquareContext.SaveChanges();
                 } while (venueList.Count != 0 && venueList != null && offset <= 1000);

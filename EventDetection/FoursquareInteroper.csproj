@@ -63,6 +63,7 @@
     <Compile Include="Model\Venue.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RequestRegionCalculator.cs" />
     <Compile Include="Requests.cs" />
     <Compile Include="RequestTypes.cs" />
   </ItemGroup>

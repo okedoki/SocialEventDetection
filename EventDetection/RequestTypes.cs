@@ -333,5 +333,10 @@ namespace EventDetection
         {
             public List<Response> response { get; set; }
         }
+
+        public class AccessToken
+        {
+            public string access_token { get; set; }
+        }
     
 }
