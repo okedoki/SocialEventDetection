@@ -30,29 +30,32 @@ namespace EventDetection
             venuesSearchRequest.AddParameter("specials", "0"); 
             if (offset != 0) venuesSearchRequest.AddParameter("offset", offset);
 
-        //   IRestResponse r = client.Execute(venuesSearchRequest);
-
             return  client.Execute<VenueExploreType>(venuesSearchRequest).Data;
        
         }
-
-        public VenueExploreType VenueExploreBySquare(int offset = 0)
+        public VenueExploreType VenueExploreBySquare(ExploreInfo info)
         {
             RestRequest venuesSearchRequest = new RestRequest("https://api.foursquare.com/v2/venues/explore");
-
-            venuesSearchRequest.AddParameter("near", "Russia, St.-Petersburg");
+           
+ 
             venuesSearchRequest.AddParameter("limit", "50");
             venuesSearchRequest.AddParameter("oauth_token", _accessToken);
             venuesSearchRequest.AddParameter("v", "20140223");
             venuesSearchRequest.AddParameter("intent", "browse");
             venuesSearchRequest.AddParameter("openNow", "0");
             venuesSearchRequest.AddParameter("specials", "0");
-            if (offset != 0) venuesSearchRequest.AddParameter("offset", offset);
+            venuesSearchRequest.AddParameter("ll", info.LatitudeAndLongitude());
 
-            //   IRestResponse r = client.Execute(venuesSearchRequest);
-
+    
             return client.Execute<VenueExploreType>(venuesSearchRequest).Data;
 
+        }
+        public List<Category> GetCategories( )
+        {
+            RestRequest venuesSearchRequest = new RestRequest("https://api.foursquare.com/v2/venues/categories");
+            venuesSearchRequest.AddParameter("oauth_token", _accessToken);
+            venuesSearchRequest.AddParameter("v", "20140223");
+            return client.Execute<Categories>(venuesSearchRequest).Data.response.categories;
         }
     }
 }

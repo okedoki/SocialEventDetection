@@ -11,6 +11,22 @@ namespace EventDetection.Model
     {
         public DbSet<Venue> Venues { get; set; }
         public DbSet<CheckinStatistic> Checkins { get; set; }
+        public DbSet<DbCategory> Categories { get; set; }
+
+        public void setCategory(List<Category> cat)
+        {
+            foreach(Category cat1 in cat)
+            {
+                Categories.Add(new DbCategory() { Id = cat1.id, Name = cat1.name, ParrentId = "" });
+                foreach (Category cat2 in cat1.categories)
+                {
+                    Categories.Add(new DbCategory() { Id = cat2.id, Name = cat2.name, ParrentId = cat1.id });
+                }
+            }
+
+
+        }
+
 
         public int setNewVenueAndCheckinList(List<Item2> itemList, DateTime dt)
         {
@@ -28,7 +44,7 @@ namespace EventDetection.Model
                      Address = item.venue.location.address,
                      Lat = item.venue.location.lat,
                      Lng = item.venue.location.lng,
-                     CategoryName = item.venue.categories.FirstOrDefault().name,
+                     CategoryId = item.venue.categories.FirstOrDefault().id,
                      Name = item.venue.name
                  });
                 Checkins.Add(new CheckinStatistic

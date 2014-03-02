@@ -57,6 +57,7 @@
     <Compile Include="CodeForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Model\Category.cs" />
     <Compile Include="Model\CheckinStatistic.cs" />
     <Compile Include="Model\FoursquareContext.cs" />
     <Compile Include="Model\FoursquareDbInitializer.cs" />

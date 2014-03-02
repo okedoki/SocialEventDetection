@@ -1,4 +1,6 @@
-﻿using System;
+﻿#define DbCreate
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,6 +8,7 @@ using System.Threading.Tasks;
 using System.Configuration;
 using System.Windows.Forms;
 using RestSharp;
+
 
 namespace EventDetection
 {
@@ -56,9 +59,22 @@ namespace EventDetection
             #endregion
 
             Requests requests = new Requests(accessToken);
+            System.Data.Entity.Database.SetInitializer(new EventDetection.Model.FoursquareDbInitializer());
+#if(DbCreate)
+            #region  GetCategorities
+            List<Category> cat =  requests.GetCategories();
+
+            using (EventDetection.Model.FoursquareContext foursquareContext = new Model.FoursquareContext())
+            {
+                foursquareContext.setCategory(cat);
+                foursquareContext.SaveChanges();
+            }
+
+            #endregion
+            #region GetFirstVenueInfo
             List<Item2> venueList;
             int resultedOccassion = 0;
-            int offset = 0;
+ 
 
 
 
@@ -68,37 +84,40 @@ namespace EventDetection
             string leftBottomMap = configFile.AppSettings.Settings["leftBottomMapCorner"].Value;
             string rightUpperMap =  configFile.AppSettings.Settings["rightUpperMapCorner"].Value;
 
-            RequestRegionCalculator reqCalculator = new RequestRegionCalculator(leftBottomMap, rightUpperMap, 0.125, 0.25);
-            ExploreInfo e ;
-            int i = 0;
-            do
-            {
-                 e = reqCalculator.CalculateNextParameters();
-                 i++;
-            }
-            while (e.Longitude != 0) ;
+            RequestRegionCalculator reqCalculator = new RequestRegionCalculator(leftBottomMap, rightUpperMap, 0.25, 0.25);
+            ExploreInfo exploreInfo;
+            int currentPieceNumber = 0;
+            Console.WriteLine("Total number of pieces:{0}", reqCalculator.PieceNumber);
 
-            System.Data.Entity.Database.SetInitializer(new EventDetection.Model.FoursquareDbInitializer());
+
+ 
             using (EventDetection.Model.FoursquareContext foursquareContext = new Model.FoursquareContext())
             {
                 do
                 {
-                    offset += 50;
-                    venueReturns = requests.VenueWholeCity(offset);
-                    venueList = venueReturns.response[0].groups[0].items;
+                    exploreInfo = reqCalculator.CalculateNextParameters(); 
+                    Console.WriteLine("Piece #{0} ", currentPieceNumber++);
 
+                    venueReturns = requests.VenueExploreBySquare(exploreInfo);
+                    try
+                    {
+                        venueList = venueReturns.response[0].groups[0].items;
+                    }
+                    catch (NullReferenceException)
+                    {
+                        venueList = new List<Item2>();
+                    }
                     foreach (Item2 g in venueList)
                     {
                         Console.WriteLine(g.venue.id + ". " + g.venue.name);
                     }
-          
 
-              //      ExploreInfo
                     resultedOccassion += foursquareContext.setNewVenueAndCheckinList(venueList, DateTime.Now);
                     foursquareContext.SaveChanges();
-                } while (venueList.Count != 0 && venueList != null && offset <= 1000);
+                } while (venueList != null  && exploreInfo.Radius != 0);
             }
-
+            #endregion
+#endif
             Console.WriteLine("Number of occasion:" + resultedOccassion);
             Console.ReadKey();
         }
