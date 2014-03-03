@@ -1,4 +1,4 @@
-﻿//#define DbCreate
+﻿#define DbCreate
 
 using System;
 using System.Collections.Generic;
