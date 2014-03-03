@@ -74,7 +74,40 @@ namespace EventDetection
             this.radius = radius;
         }
 
+
+
     }
+
+    public static class CoordinatesUtil
+{
+    // http://www.geodatasource.com/developers/c-sharp  Автор
+    public static double Distance(double lat1, double lon1, double lat2, double lon2, char unit = 'K')
+    {
+        double theta = lon1 - lon2;
+        double dist = Math.Sin(deg2rad(lat1)) * Math.Sin(deg2rad(lat2)) + Math.Cos(deg2rad(lat1)) * Math.Cos(deg2rad(lat2)) * Math.Cos(deg2rad(theta));
+        dist = Math.Acos(dist);
+        dist = rad2deg(dist);
+        dist = dist * 60 * 1.1515;
+        if (unit == 'K')
+        {
+            dist = dist * 1.609344;
+        }
+        else if (unit == 'N')
+        {
+            dist = dist * 0.8684;
+        }
+        return (dist);
+    }
+    private static double deg2rad(double deg)
+    {
+        return (deg * Math.PI / 180.0);
+    }
+    private static double rad2deg(double rad)
+    {
+        return (rad / Math.PI * 180.0);
+    }
+
+}
     public class RequestRegionCalculator
     {
         private readonly GeoCoordinate _leftBottom;
@@ -152,9 +185,11 @@ namespace EventDetection
             double longitudeDifference = rightLongitude - leftLongitude;
 
             double radius = Math.Sqrt(Math.Pow(latitudeDifference, 2) + Math.Pow(longitudeDifference, 2)) / 2;
-
+            radius = CoordinatesUtil.Distance(bottomLatitude, leftLongitude, upperLatitude, rightLongitude)*1000;
             return new ExploreInfo(bottomLatitude + latitudeDifference, leftLongitude + longitudeDifference, radius);
         }
+
+
 
     }
 }

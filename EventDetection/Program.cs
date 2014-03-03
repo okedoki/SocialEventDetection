@@ -1,4 +1,4 @@
-﻿#define DbCreate
+﻿//#define DbCreate
 
 using System;
 using System.Collections.Generic;
@@ -42,7 +42,7 @@ namespace EventDetection
 
                 CodeForm form = CodeFormFactory.FormCreate(address, redirectUri);
                 Application.Run(form);
- 
+
                 if (string.IsNullOrEmpty(form.Code)) throw new Exception("Returned code is equal to null. Goodbye");
                 code = form.Code;
                 string url = string.Format("{0}?client_id={1}&client_secret={2}&grant_type=authorization_code&redirect_uri={3}&code={4}", accessTokenUrl, clientId, clientSecret, redirectUri, code);
@@ -71,54 +71,59 @@ namespace EventDetection
             }
 
             #endregion
+#endif
             #region GetFirstVenueInfo
-            List<Item2> venueList;
-            int resultedOccassion = 0;
- 
 
 
 
-       
-            VenueExploreType  venueReturns;
+
+
+            VenueExploreType venueReturns;
 
             string leftBottomMap = configFile.AppSettings.Settings["leftBottomMapCorner"].Value;
-            string rightUpperMap =  configFile.AppSettings.Settings["rightUpperMapCorner"].Value;
+            string rightUpperMap = configFile.AppSettings.Settings["rightUpperMapCorner"].Value;
 
             RequestRegionCalculator reqCalculator = new RequestRegionCalculator(leftBottomMap, rightUpperMap, 0.25, 0.25);
-            ExploreInfo exploreInfo;
+            ExploreInfo exploreInfo = new ExploreInfo();
             int currentPieceNumber = 0;
             Console.WriteLine("Total number of pieces:{0}", reqCalculator.PieceNumber);
 
+            List<Item2> venueList = null;
+            int newVenue = 0;
 
- 
+            int offset = 0;
             using (EventDetection.Model.FoursquareContext foursquareContext = new Model.FoursquareContext())
             {
                 do
                 {
-                    exploreInfo = reqCalculator.CalculateNextParameters(); 
                     Console.WriteLine("Piece #{0} ", currentPieceNumber++);
 
+                    exploreInfo = reqCalculator.CalculateNextParameters();
                     venueReturns = requests.VenueExploreBySquare(exploreInfo);
                     try
                     {
                         venueList = venueReturns.response[0].groups[0].items;
+                        foreach (Item2 g in venueList)
+                        {
+                            Console.WriteLine(g.venue.id + ". " + g.venue.name);
+                        }
+
+                        newVenue += foursquareContext.setNewVenueAndCheckinList(venueList, DateTime.Now);
+                        foursquareContext.SaveChanges();
+
                     }
                     catch (NullReferenceException)
                     {
-                        venueList = new List<Item2>();
-                    }
-                    foreach (Item2 g in venueList)
-                    {
-                        Console.WriteLine(g.venue.id + ". " + g.venue.name);
+                        offset = 0;
                     }
 
-                    resultedOccassion += foursquareContext.setNewVenueAndCheckinList(venueList, DateTime.Now);
-                    foursquareContext.SaveChanges();
-                } while (venueList != null  && exploreInfo.Radius != 0);
+
+                } while (exploreInfo.Radius != 0 && exploreInfo.Latitude != 0 && exploreInfo.Longitude != 0);
+                Console.WriteLine("Number of unique venue:" + newVenue);
             }
             #endregion
-#endif
-            Console.WriteLine("Number of occasion:" + resultedOccassion);
+
+
             Console.ReadKey();
         }
     }
