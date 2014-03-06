@@ -9,9 +9,11 @@ namespace EventDetection
 {
     class Requests
     {
-        RestClient client = new RestClient();
+        private const string _apiVersion = "20140223";
 
-        string _accessToken;
+        RestClient client = new RestClient();
+        private string _accessToken;
+
         public Requests(string accessToken)
         {
             this._accessToken = accessToken;
@@ -24,7 +26,7 @@ namespace EventDetection
             venuesSearchRequest.AddParameter("near", "Russia, St.-Petersburg");
             venuesSearchRequest.AddParameter("limit", "50");
             venuesSearchRequest.AddParameter("oauth_token", _accessToken);
-            venuesSearchRequest.AddParameter("v", "20140223");
+            venuesSearchRequest.AddParameter("v", _apiVersion);
             venuesSearchRequest.AddParameter("intent", "browse");
             venuesSearchRequest.AddParameter("openNow", "0");
             venuesSearchRequest.AddParameter("specials", "0");
@@ -40,7 +42,7 @@ namespace EventDetection
 
             venuesSearchRequest.AddParameter("limit", "50");
             venuesSearchRequest.AddParameter("oauth_token", _accessToken);
-            venuesSearchRequest.AddParameter("v", "20140223");
+            venuesSearchRequest.AddParameter("v", _apiVersion);
             venuesSearchRequest.AddParameter("day", "any");
             venuesSearchRequest.AddParameter("time", "any");
 
@@ -52,11 +54,39 @@ namespace EventDetection
             return client.Execute<VenueExploreType>(venuesSearchRequest).Data;
 
         }
+        public VenueExploreType VenueBySquare(ExploreInfo swInfo, ExploreInfo neInfo)
+        {
+            RestRequest venuesSearchRequest = new RestRequest("https://api.foursquare.com/v2/venues/explore");
+
+
+            venuesSearchRequest.AddParameter("limit", "50");
+            venuesSearchRequest.AddParameter("oauth_token", _accessToken);
+            venuesSearchRequest.AddParameter("v", _apiVersion);
+
+            venuesSearchRequest.AddParameter("sw", swInfo.LatitudeAndLongitude());
+            venuesSearchRequest.AddParameter("ne", neInfo.LatitudeAndLongitude()); 
+ 
+
+            //   venuesSearchRequest.AddParameter("radius", info.Radius * 100);
+
+            return client.Execute<VenueExploreType>(venuesSearchRequest).Data;
+        }
+  
+        public void UpdateVenue(List<Venue> d)
+        {
+            RestRequest venuesSearchRequest = new RestRequest("https://api.foursquare.com/v2/venues/timeseries");
+ 
+            venuesSearchRequest.AddParameter("oauth_token", _accessToken);
+            venuesSearchRequest.AddParameter("v", _apiVersion);
+            venuesSearchRequest.AddParameter("venueId", _apiVersion); 
+ 
+        }
+
         public List<Category> GetCategories()
         {
             RestRequest venuesSearchRequest = new RestRequest("https://api.foursquare.com/v2/venues/categories");
             venuesSearchRequest.AddParameter("oauth_token", _accessToken);
-            venuesSearchRequest.AddParameter("v", "20140223");
+            venuesSearchRequest.AddParameter("v", _apiVersion);
             return client.Execute<Categories>(venuesSearchRequest).Data.response.categories;
         }
     }

@@ -1,4 +1,4 @@
-﻿#define DbCreate
+﻿//#define DbCreate
 
 using System;
 using System.Collections.Generic;
@@ -71,35 +71,30 @@ namespace EventDetection
             }
 
             #endregion
+            
 #endif
             #region GetFirstVenueInfo
-
-
-
-
-
             VenueExploreType venueReturns;
 
             string leftBottomMap = configFile.AppSettings.Settings["leftBottomMapCorner"].Value;
             string rightUpperMap = configFile.AppSettings.Settings["rightUpperMapCorner"].Value;
 
-            RequestRegionCalculator reqCalculator = new RequestRegionCalculator(leftBottomMap, rightUpperMap, 0.25, 0.25);
+            RequestRegionCalculator reqCalculator = new RequestRegionCalculator(leftBottomMap, rightUpperMap, 0.05, 0.05);
             ExploreInfo exploreInfo = new ExploreInfo();
             int currentPieceNumber = 0;
             Console.WriteLine("Total number of pieces:{0}", reqCalculator.PieceNumber);
 
             List<Item2> venueList = null;
             int newVenue = 0;
+            int occasionNumber = 0;
 
-            int offset = 0;
             using (EventDetection.Model.FoursquareContext foursquareContext = new Model.FoursquareContext())
             {
                 do
                 {
                     Console.WriteLine("Piece #{0} ", currentPieceNumber++);
-
-                    exploreInfo = reqCalculator.CalculateNextParameters();
-                    venueReturns = requests.VenueExploreBySquare(exploreInfo);
+                    Tuple<ExploreInfo, ExploreInfo> exploreInfoPair= reqCalculator.GetNextPairExploreInfo();
+                    venueReturns = requests.VenueBySquare(exploreInfoPair.Item1, exploreInfoPair.Item2);
                     try
                     {
                         venueList = venueReturns.response[0].groups[0].items;
@@ -114,14 +109,16 @@ namespace EventDetection
                     }
                     catch (NullReferenceException)
                     {
-                        offset = 0;
+                        occasionNumber++;
                     }
 
 
-                } while (exploreInfo.Radius != 0 && exploreInfo.Latitude != 0 && exploreInfo.Longitude != 0);
+                } while (currentPieceNumber != reqCalculator.PieceNumber);
                 Console.WriteLine("Number of unique venue:" + newVenue);
+                Console.WriteLine("Occasion number:" + occasionNumber);
             }
             #endregion
+
 
 
             Console.ReadKey();

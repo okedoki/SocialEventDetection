@@ -42,13 +42,13 @@ namespace EventDetection
     }
     public struct ExploreInfo
     {
-        private double latitude;
+        private readonly double latitude;
 
         public double Latitude
         {
             get { return latitude; }
         }
-        private double longitude;
+        private readonly double longitude;
 
         public double Longitude
         {
@@ -61,7 +61,7 @@ namespace EventDetection
              return Latitude.ToString(culture) + "," + Longitude.ToString(culture);
         }
 
-        private double radius;
+        private readonly double radius;
 
         public double Radius
         {
@@ -73,10 +73,41 @@ namespace EventDetection
             this.longitude = longitude;
             this.radius = radius;
         }
-
+        public ExploreInfo(double latitude, double longitude)
+        {
+            this.latitude = latitude;
+            this.longitude = longitude;
+            this.radius = 0;
+        }
 
 
     }
+    //public struct TwoPointInfo
+    //{
+    //    private double firstLatitude;
+    //    private double firstLongitude;
+    //    private double secondLatitude;
+    //    private double secondLongitude;
+
+    //    public TwoPointInfo(double firstLatitude, double firstLongitude, double secondLatitude, double secondLongitude)
+    //    {
+    //        this.firstLatitude = firstLatitude;
+    //        this.firstLongitude = firstLongitude;
+    //        this.secondLatitude = secondLatitude;
+    //        this.secondLongitude = secondLongitude;
+    //    }
+
+    //    public string FirstPoint
+    //    {
+    //        get { return firstLongitude; }
+    //    }
+
+    //    public string SecondPoint
+    //    {
+    //        get { return firstLongitude; }
+    //    }
+
+    //}
 
     public static class CoordinatesUtil
 {
@@ -112,6 +143,7 @@ namespace EventDetection
     {
         private readonly GeoCoordinate _leftBottom;
         private readonly GeoCoordinate _rightUpper;
+
 
         private readonly double _latitudeDistance;
         private readonly double _longitudeDistance;
@@ -154,9 +186,10 @@ namespace EventDetection
         }
         private int i = 0;
         private const double eps = 0.00001;
-        public ExploreInfo CalculateNextParameters()
+
+        public ExploreInfo GetNextExploreInfo()
         {
-            ExploreInfo exploreInfo = CalculateRadius(_currentLatitude, _nextLatitude, _currentLongitude, _nextLongitude);
+            ExploreInfo exploreInfo = ConstractExploreInfo(_currentLatitude, _nextLatitude, _currentLongitude, _nextLongitude);
             if (_nextLongitude + eps >= _rightUpper.Longitude)
             {
                 if (_nextLatitude + eps >= _rightUpper.Latitude) return new ExploreInfo();
@@ -179,7 +212,35 @@ namespace EventDetection
             return exploreInfo;
 
         }
-        private ExploreInfo CalculateRadius(double bottomLatitude, double upperLatitude, double leftLongitude, double rightLongitude)
+
+
+        public Tuple<ExploreInfo,ExploreInfo> GetNextPairExploreInfo()
+        {
+            ExploreInfo leftInfo = new ExploreInfo(_currentLatitude, _currentLongitude);
+            ExploreInfo rightInfo = new ExploreInfo(_nextLatitude, _nextLongitude);
+            if (_nextLongitude + eps >= _rightUpper.Longitude)
+            {
+                if (_nextLatitude + eps >= _rightUpper.Latitude) return new Tuple<ExploreInfo,ExploreInfo>(new ExploreInfo(),new ExploreInfo());
+
+
+                _currentLatitude = _nextLatitude;
+                _nextLatitude = _currentLatitude + _hLatitude;
+
+                _currentLongitude = _leftBottom.Longitude;
+                _nextLongitude = _currentLongitude + _hLongitude;
+                return new Tuple<ExploreInfo, ExploreInfo>(leftInfo, rightInfo);
+
+            }
+            else
+            {
+                i++;
+                _currentLongitude = _nextLongitude;
+                _nextLongitude = _currentLongitude + _hLongitude;
+            }
+            return new Tuple<ExploreInfo, ExploreInfo>(leftInfo, rightInfo);
+
+        }
+        private ExploreInfo ConstractExploreInfo(double bottomLatitude, double upperLatitude, double leftLongitude, double rightLongitude)
         {
             double latitudeDifference = upperLatitude - bottomLatitude;
             double longitudeDifference = rightLongitude - leftLongitude;

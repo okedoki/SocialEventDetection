@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace EventDetection.Model
 {
-    class FoursquareDbInitializer : DropCreateDatabaseIfModelChanges<FoursquareContext> //DropCreateDatabaseAlways<FoursquareContext>   
+    class FoursquareDbInitializer : DropCreateDatabaseAlways<FoursquareContext>   //DropCreateDatabaseIfModelChanges<FoursquareContext> 
     {
         protected override void Seed(FoursquareContext context)
         {
